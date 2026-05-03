@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "SmartRooms@123"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqldata:/var/opt/mssql
+    networks:
+      - smartrooms-net
+
+  roomservice:
+    build: ./RoomService
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=RoomDb;User Id=sa;Password=SmartRooms@123;TrustServerCertificate=True;MultipleActiveResultSets=True
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - sqlserver
+    networks:
+      - smartrooms-net
+
+  bookingservice:
+    build: ./BookingService
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=BookingDb;User Id=sa;Password=SmartRooms@123;TrustServerCertificate=True;MultipleActiveResultSets=True
+      - RoomServiceUrl=http://roomservice:8080
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - sqlserver
+      - roomservice
+    networks:
+      - smartrooms-net
+
+  userservice:
+    build: ./UserService
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=UserDb;User Id=sa;Password=SmartRooms@123;TrustServerCertificate=True;MultipleActiveResultSets=True
+      - JwtKey=SuperSecretKeyForSmartRooms2024XYZ!
+      - JwtIssuer=SmartRooms
+      - JwtAudience=SmartRoomsUsers
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - sqlserver
+    networks:
+      - smartrooms-net
+
+  apigateway:
+    build: ./ApiGateway
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - roomservice
+      - bookingservice
+      - userservice
+    networks:
+      - smartrooms-net
+
+volumes:
+  sqldata:
+
+networks:
+  smartrooms-net:
+    driver: bridge

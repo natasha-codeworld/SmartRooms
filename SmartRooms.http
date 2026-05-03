@@ -1,0 +1,184 @@
+### SmartRooms API - Test all endpoints
+### Use with VS Code REST Client extension or Visual Studio HTTP Files
+
+@baseUrl = http://localhost:5000
+@token = PASTE_YOUR_JWT_TOKEN_HERE
+
+##############################################
+# AUTH - User Service
+##############################################
+
+### Register a new user
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Smith",
+  "email": "john@example.com",
+  "password": "Password123!",
+  "department": "Engineering"
+}
+
+###
+
+### Login and get JWT token
+# Copy the token from the response and paste into @token above
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "Password123!"
+}
+
+###
+
+### Get all users
+GET {{baseUrl}}/api/auth/users
+
+###
+
+### Get user by ID
+GET {{baseUrl}}/api/auth/users/1
+
+##############################################
+# ROOMS - Room Service
+##############################################
+
+### Get all rooms
+GET {{baseUrl}}/api/rooms
+
+###
+
+### Get room by ID
+GET {{baseUrl}}/api/rooms/1
+
+###
+
+### Get available rooms (optionally filter by capacity)
+GET {{baseUrl}}/api/rooms/available?capacity=10
+
+###
+
+### Create a new room
+POST {{baseUrl}}/api/rooms
+Content-Type: application/json
+
+{
+  "name": "Executive Suite",
+  "location": "HQ Building",
+  "floor": "Floor 5",
+  "capacity": 8,
+  "hasProjector": true,
+  "hasWhiteboard": true,
+  "hasVideoConference": true,
+  "pricePerHour": 200
+}
+
+###
+
+### Update a room
+PUT {{baseUrl}}/api/rooms/1
+Content-Type: application/json
+
+{
+  "name": "Conference Room A - Updated",
+  "location": "Building 1",
+  "floor": "Floor 1",
+  "capacity": 12,
+  "hasProjector": true,
+  "hasWhiteboard": true,
+  "hasVideoConference": true,
+  "pricePerHour": 60
+}
+
+###
+
+### Soft delete a room
+DELETE {{baseUrl}}/api/rooms/5
+
+##############################################
+# BOOKINGS - Booking Service
+##############################################
+
+### Create a booking (will fail if conflicting slot)
+POST {{baseUrl}}/api/bookings
+Content-Type: application/json
+
+{
+  "roomId": 1,
+  "bookedByUserId": "1",
+  "bookedByName": "John Smith",
+  "bookedByEmail": "john@example.com",
+  "title": "Sprint Planning",
+  "notes": "Bring laptops and sticky notes",
+  "startTime": "2025-08-01T09:00:00",
+  "endTime": "2025-08-01T11:00:00"
+}
+
+###
+
+### Try to create a CONFLICTING booking (should return 409)
+POST {{baseUrl}}/api/bookings
+Content-Type: application/json
+
+{
+  "roomId": 1,
+  "bookedByUserId": "2",
+  "bookedByName": "Jane Doe",
+  "bookedByEmail": "jane@example.com",
+  "title": "Product Review",
+  "notes": "Overlap test",
+  "startTime": "2025-08-01T10:00:00",
+  "endTime": "2025-08-01T12:00:00"
+}
+
+###
+
+### Get all bookings
+GET {{baseUrl}}/api/bookings
+
+###
+
+### Get booking by ID
+GET {{baseUrl}}/api/bookings/1
+
+###
+
+### Get bookings by user
+GET {{baseUrl}}/api/bookings/user/1
+
+###
+
+### Get bookings for a specific room
+GET {{baseUrl}}/api/bookings/room/1
+
+###
+
+### Get room schedule for a specific date
+GET {{baseUrl}}/api/bookings/room/1/schedule?date=2025-08-01
+
+###
+
+### Check for conflicts before booking
+GET {{baseUrl}}/api/bookings/conflicts?roomId=1&start=2025-08-01T09:00:00&end=2025-08-01T11:00:00
+
+###
+
+### Cancel a booking
+PUT {{baseUrl}}/api/bookings/1/cancel
+Content-Type: application/json
+
+{
+  "reason": "Meeting rescheduled to next week"
+}
+
+###
+
+### Get booking statistics
+GET {{baseUrl}}/api/bookings/stats
+
+###
+
+### Health check
+GET {{baseUrl}}/health
