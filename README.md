@@ -141,4 +141,4 @@ HTTP 409 Conflict
 
 ## Author
 
-Built by [Your Name] — [LinkedIn URL] — [GitHub URL]
+Built by Natasha Sharma — (https://www.linkedin.com/in/natasha-sharma-60b2bb234/)
